@@ -27,7 +27,7 @@ if offset == eye(parameters.m)
     disp('satisfied');
 end
 
-%% Step response
+%% Step response (without CG)
 
 % Create custom signal
 N = 1000;
@@ -50,7 +50,11 @@ grid on
 legend('Input Signal','Input Response')
 hold off
 
-%% Applica formula
+%% ---------- CG Application --------------------------------------------
+
+%% OFFLINE PHASE
+% Compute k0
+
 parameters.T = [1 0 0;
                 -1 0 0;
                 0 1 0;
@@ -65,4 +69,3 @@ parameters.L = [0; 0; 1];
 parameters.delta = 0.1;
 
 k0 = compk0(parameters);
-
