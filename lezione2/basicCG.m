@@ -45,16 +45,17 @@ y = lsim(sys,signal',k);
 figure('Name','Input Signal vs Input Response')
 hold on
 plot(k,signal,'LineStyle','-.','LineWidth',1)
-plot(k,y,'LineStyle','--','LineWidth',1)
+plot(k,y,'LineStyle','-','LineWidth',1)
 grid on
 legend('Input Signal','Input Response')
 hold off
 
-%% ---------- CG Application --------------------------------------------
+%% ---------- CG Application (no disturbances) --------------------------------------------
 
 %% OFFLINE PHASE
-% Compute k0
+% Define matrices
 
+% constraints matrix T
 parameters.T = [1 0 0;
                 -1 0 0;
                 0 1 0;
@@ -62,10 +63,21 @@ parameters.T = [1 0 0;
                 0 0 1;
                 0 0 -1];
 parameters.g = ones(6,1);
-parameters.Hc = [1 0; 0 1; 0 0];
+parameters.Hc = [1 0; 0 1; 0 0];    % related to x(t)
 parameters.Phi = A;
 parameters.G = B;
-parameters.L = [0; 0; 1];
+parameters.L = [0; 0; 1];           % related to g(t)
 parameters.delta = 0.1;
 
+% Compute k0
+
 k0 = compk0(parameters);
+
+%% ONLINE PHASE
+
+% matrix \Psi
+parameters.Psi = 1;
+
+
+
+
