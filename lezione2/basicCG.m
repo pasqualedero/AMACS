@@ -40,7 +40,7 @@ signal(k>=500 & k<=700) = 5;
 signal(k>700) = 15;
 
 sys = ss(A,B,C,D,Ts);
-y = lsim(sys,signal',k);
+[y,~,x] = lsim(sys,signal',k);
 
 figure('Name','Input Signal vs Input Response')
 hold on
@@ -78,6 +78,9 @@ k0 = compk0(parameters);
 % matrix \Psi
 parameters.Psi = 1;
 
-
+% run simulation
+for i = 1:Ts:N
+    g = computeG(signal(i), x(i,:)', k0, parameters);
+end
 
 
