@@ -1,4 +1,4 @@
-function g = computeG(reference,x,k0,parameters)
+function u_applied = computeG(reference,x,k0,parameters)
 % returns the command g to apply to primal controller
 
 T=parameters.T;
@@ -22,12 +22,14 @@ for k = 0:k0
     Rx=Rx+Phi^k*G;
 end
 
-options = sdpsettings('solver','sedumi','verbose', 0);
+options = sdpsettings('verbose', 0);
 solution = optimize(con, (w-reference)'*Psi*(w-reference), options);
 
 if solution.problem~=0
     disp(solution);
     error('error')
 end
+
+u_applied = value(w);
 
 end

@@ -1,4 +1,4 @@
-clear; clc;
+clear; clc; close all;
 
 %% Define system
 
@@ -29,16 +29,25 @@ end
 
 %% Step response (without CG)
 
-% Create custom signal
-N = 1000;
-signal = zeros(1,N);
-k = 1:Ts:N;
+% Create custom signal: Simul. Time N = 200s
+N = 200;
+phase_duration = N/4;
+steps_per_phase = phase_duration/Ts;
 
-signal(k<200) = 10;
-signal(k>=200 & k<500) = 20;
-signal(k>=500 & k<=700) = 5;
-signal(k>700) = 15;
+s1 = 0.1 * ones(1, steps_per_phase);
+s2 = 0.5 * ones(1, steps_per_phase);
+s3 = -0.5 * ones(1, steps_per_phase);
+s4 = 0.8 * ones(1, steps_per_phase);
 
+signal = [s1, s2, s3, s4];
+
+% Total steps
+total_steps = length(signal);
+
+% Step indexes: from 0 to N with Ts as increment
+k = 0 : Ts : (total_steps - 1) * Ts;
+
+% Simulate
 sys = ss(A,B,C,D,Ts);
 [y,~,x] = lsim(sys,signal',k);
 
@@ -78,9 +87,115 @@ k0 = compk0(parameters);
 % matrix \Psi
 parameters.Psi = 1;
 
+% store x and y and g
+X = zeros(parameters.n, length(signal))';
+Y = zeros(parameters.m, length(signal))';
+g_store = zeros(parameters.m, length(signal));
+
+X(1,:) = [0 0];
+
 % run simulation
-for i = 1:Ts:N
-    g = computeG(signal(i), x(i,:)', k0, parameters);
+for i = 1:length(signal)-1
+    g = computeG(signal(i), X(i,:)', k0, parameters);
+
+    x_next = A * X(i,:)' + B * g';
+    y_next = C * X(i,:)' + D * g';
+
+    X(i+1,:) = x_next';
+    Y(i+1,:) = y_next';
+
+    g_store(:,i) = g;
+
 end
+
+%% PLOTS
+
+% Non-CG Approach
+
+figure('Name','CG vs Non-CG controlled system');
+hold on
+
+subplot(6,3,[1 2 4 5 7 8])
+hold on;
+plot(k,signal,'LineStyle','--','LineWidth',1.5,'Color','r');
+plot(k,y,'LineWidth',2,'Color','c');
+grid on;
+title('Non-CG approach')
+yline(1,'LineStyle','--','Color','g','LineWidth',1.5);
+yline(-1,'LineStyle','--','Color','g','LineWidth',1.5);
+legend('reference','response');
+ylim([-2 2]);
+hold off
+
+subplot(6,3,3)
+plot(k,x(:,1),'LineWidth',1.5,'Color','b')
+grid on;
+title('x_1')
+xlabel('k-step')
+yline(1,'LineStyle','--','Color','g','LineWidth',1.5);
+yline(-1,'LineStyle','--','Color','g','LineWidth',1.5);
+ylim([-2 2]);
+
+subplot(6,3,6)
+plot(k,x(:,2),'LineWidth',1.5,'Color','b')
+grid on;
+title('x_2')
+xlabel('k-step')
+yline(1,'LineStyle','--','Color','g','LineWidth',1.5);
+yline(-1,'LineStyle','--','Color','g','LineWidth',1.5);
+ylim([-2 2]);
+
+subplot(6,3,9);
+plot(k,signal,'LineWidth',1.5,'Color','b')
+grid on;
+title('u(t)')
+xlabel('k-step')
+yline(1,'LineStyle','--','Color','g','LineWidth',1.5);
+yline(-1,'LineStyle','--','Color','g','LineWidth',1.5);
+ylim([-2 2]);
+
+% CG Approach
+
+subplot(6,3,[10 11 13 14 16 17])
+hold on;
+plot(k,signal,'LineStyle','--','LineWidth',1.5,'Color','r');
+plot(k,Y,'LineWidth',2,'Color','c');
+grid on;
+title('CG approach')
+xlabel('k-step')
+yline(1,'LineStyle','--','Color','g','LineWidth',1.5);
+yline(-1,'LineStyle','--','Color','g','LineWidth',1.5);
+legend('reference','response');
+ylim([-2 2]);
+hold off
+
+subplot(6,3,12)
+plot(k,X(:,1),'LineWidth',1.5,'Color','b')
+grid on;
+title('x_1')
+xlabel('k-step')
+yline(1,'LineStyle','--','Color','g','LineWidth',1.5);
+yline(-1,'LineStyle','--','Color','g','LineWidth',1.5);
+ylim([-2 2]);
+
+subplot(6,3,15)
+plot(k,X(:,2),'LineWidth',1.5,'Color','b')
+grid on;
+title('x_2')
+xlabel('k-step')
+yline(1,'LineStyle','--','Color','g','LineWidth',1.5);
+yline(-1,'LineStyle','--','Color','g','LineWidth',1.5);
+ylim([-2 2]);
+
+subplot(6,3,18);
+plot(k,g_store,'LineWidth',1.5,'Color','b')
+grid on;
+title('u(t)')
+xlabel('k-step')
+yline(1,'LineStyle','--','Color','g','LineWidth',1.5);
+yline(-1,'LineStyle','--','Color','g','LineWidth',1.5);
+ylim([-2 2]);
+
+hold off
 
 
