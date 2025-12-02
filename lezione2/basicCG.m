@@ -51,13 +51,6 @@ k = 0 : Ts : (total_steps - 1) * Ts;
 sys = ss(A,B,C,D,Ts);
 [y,~,x] = lsim(sys,signal',k);
 
-figure('Name','Input Signal vs Input Response')
-hold on
-plot(k,signal,'LineStyle','-.','LineWidth',1)
-plot(k,y,'LineStyle','-','LineWidth',1)
-grid on
-legend('Input Signal','Input Response')
-hold off
 
 %% ---------- CG Application (no disturbances) --------------------------------------------
 
