@@ -22,9 +22,7 @@ classdef Ellipsoid < handle
                 optional.q = zeros(size(Q,1),1) 
             end
             obj.Q = Q;
-            if ~isempty(optional.q)
-                obj.q = optional.q; 
-            end
+            obj.q = optional.q;
             obj.counterID = Ellipsoid.getNextID();
         end
         
